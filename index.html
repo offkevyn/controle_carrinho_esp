@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div id="btn_pressed"></div>
+
+    <div id="main_buttons">
+        <div id="group1">
+            <button class="btn btn_top" data-action="top">↑</button>
+        </div>
+        <div id="group3">
+            <button class="btn btn_right" data-action="right">←</button>
+            <button class="btn btn_led" data-action="led">❤</button>
+            <button class="btn btn_left" data-action="left">→</button>
+        </div>
+        <div id="group3">
+            <button class="btn btn_botton" data-action="botton">↓</button>
+        </div>
+    </div>
+
+    <!-- <div id="t">teste: </div> -->
+
+    <header>
+        <div>@offkevyn</div>
+    </header>
+
+    <script type="text/javascript">
+        let list_buttons = document.getElementsByClassName('btn');
+        var intervalId = 0;
+        var action_pressed;
+        let btn_select = document.getElementById("btn_pressed");
+
+        Array.from(list_buttons).forEach(element => {
+            element.addEventListener('touchstart', function (e) {
+                btn_select.appendChild(e.target.cloneNode(true));
+                intervalId = setInterval(btn_pressed, 50);
+                action_pressed = e;
+            });
+
+            element.addEventListener('click', function (e) {
+                //document.getElementById("t").innerHTML += "2";
+                ////////
+                window.navigator.vibrate(50);
+                action_pressed = e;
+            });
+
+            element.addEventListener('touchend', release);
+        });
+
+        function btn_pressed() {
+            console.log(action_pressed.target);
+            //document.getElementById("t").innerHTML += "1";
+            ///////
+            window.navigator.vibrate(50);
+            btn_select.style.top = "0";
+        }
+
+        function release() {
+            if (intervalId != 0) {
+                console.log('Soltou!');
+                /////
+                clearInterval(intervalId);
+                intervalId = 0;
+                btn_select.style.top = "-100%";
+                btn_select.innerHTML = '';
+            }
+        }
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+    </script>
+</body>
+
+
+
+</html>
