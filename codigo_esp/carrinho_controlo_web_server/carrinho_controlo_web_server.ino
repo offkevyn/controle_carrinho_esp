@@ -1,4 +1,21 @@
-<!DOCTYPE html>
+/*********
+  Criado por: Rui Santos
+  Com modificações por: offKevyn
+*********/
+#include <ESP8266WiFi.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <WiFiManager.h>
+
+
+const char* ssid = "Backdoor Longeee";
+const char* password = "Foda-se a senha";
+
+AsyncWebServer server(80);
+
+// Display the HTML web page
+            const char index_html[] = R"rawliteral(
+            <!DOCTYPE html>
 
 <html lang="pt-br">
 
@@ -250,3 +267,45 @@
 
 
 </html>
+            )rawliteral";
+
+            
+String header;
+
+// Current time
+unsigned long currentTime = millis();
+// Previous time
+unsigned long previousTime = 0;
+// Define timeout time in milliseconds (example: 2000ms = 2s)
+const long timeoutTime = 2000;
+
+void setup() {
+  Serial.begin(9600);
+
+  Serial.print("Connecting to ");
+  /*Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  // Print local IP address and start web server
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  WiFiManager wifiManager;
+  wifiManager.autoConnect("AutoConnectAP");
+  Serial.println("Connected.");*/
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/html", index_html);
+  });
+  
+  server.begin();
+}
+
+ 
+void loop() {
+  
+}
