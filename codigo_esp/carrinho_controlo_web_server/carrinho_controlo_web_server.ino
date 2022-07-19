@@ -1,21 +1,21 @@
 /*********
-  Criado por: Rui Santos
+  Criado por: Rui Santos - https://randomnerdtutorials.com/
   Com modificações por: offKevyn
 *********/
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <WiFiManager.h>
+#include <ESPAsyncWiFiManager.h>
 
-
-const char* ssid = "Backdoor Longeee";
-const char* password = "Foda-se a senha";
+#define ledPin D0
+#define buzzer D1
 
 AsyncWebServer server(80);
+DNSServer dns;
 
 // Display the HTML web page
-            const char index_html[] = R"rawliteral(
-            <!DOCTYPE html>
+static const char PROGMEM  index_html[] = R"rawliteral(
+<!DOCTYPE html>
 
 <html lang="pt-br">
 
@@ -199,7 +199,7 @@ AsyncWebServer server(80);
 
     <div id="main_buttons">
         <div id="group1">
-            <button class="btn btn_top" data-action="top">↑</button>
+            <button class="btn btn_top" data-action="forward">↑</button>
         </div>
         <div id="group3">
             <button class="btn btn_right" data-action="right">←</button>
@@ -207,7 +207,7 @@ AsyncWebServer server(80);
             <button class="btn btn_left" data-action="left">→</button>
         </div>
         <div id="group3">
-            <button class="btn btn_botton" data-action="botton">↓</button>
+            <button class="btn btn_botton" data-action="backward">↓</button>
         </div>
     </div>
 
@@ -233,6 +233,8 @@ AsyncWebServer server(80);
             element.addEventListener('click', function (e) {
                 //document.getElementById("t").innerHTML += "2";
                 ////////
+                go(e.target.dataset.action);
+                setTimeout(go('stop'), 500);
                 window.navigator.vibrate(50);
                 action_pressed = e;
             });
@@ -241,9 +243,10 @@ AsyncWebServer server(80);
         });
 
         function btn_pressed() {
-            console.log(action_pressed.target);
+            console.log(action_pressed.target.dataset.action);
             //document.getElementById("t").innerHTML += "1";
             ///////
+            go(action_pressed.target.dataset.action);
             window.navigator.vibrate(50);
             btn_select.style.top = "0";
         }
@@ -252,24 +255,32 @@ AsyncWebServer server(80);
             if (intervalId != 0) {
                 console.log('Soltou!');
                 /////
+                go('stop');
                 clearInterval(intervalId);
                 intervalId = 0;
                 btn_select.style.top = "-100%";
                 btn_select.innerHTML = '';
             }
         }
+        
+        function go(move)
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/action?go=" + move, true);
+            xhr.send();
+        }
 
         document.addEventListener('contextmenu', event => event.preventDefault());
 
     </script>
 </body>
-
-
-
 </html>
-            )rawliteral";
+)rawliteral";
 
-            
+const char* PARAM_INPUT_go = "go";
+boolean ledAtivo = false;
+String actionMove;
+
 String header;
 
 // Current time
@@ -281,31 +292,79 @@ const long timeoutTime = 2000;
 
 void setup() {
   Serial.begin(9600);
-
-  Serial.print("Connecting to ");
-  /*Serial.println(ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  // Print local IP address and start web server
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  WiFiManager wifiManager;
-  wifiManager.autoConnect("AutoConnectAP");
-  Serial.println("Connected.");*/
+  
+  pinMode(ledPin, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  
+  AsyncWiFiManager wifiManager(&server,&dns);
+  //wifiManager.resetSettings();
+  wifiManager.autoConnect("CarrinhoBraboo");
+  Serial.println("Connected.");
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", index_html);
+  });
+
+  server.on("/action", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+    if (request->hasParam(PARAM_INPUT_go)) {
+      actionMove = request->getParam(PARAM_INPUT_go)->value();
+      mover(actionMove);
+    }
+    else {
+       actionMove = "No action sent";
+    }
+    request->send(200, "text/plain", "OK");
   });
   
   server.begin();
 }
 
+static void mover(String variable){
+  
+  if(variable == "forward") {
+    Serial.println("Forward");
+    
+  }
+  else if(variable == "left") {
+    Serial.println("Left");
+    
+  }
+  else if(variable == "right") {
+    Serial.println("Right");
+    
+  }
+  else if(variable == "led") {
+    Serial.println("Led");
+   
+  }
+  else if(variable == "backward") {
+    Serial.println("Backward");
+    
+  }
+  else if(variable == "stop") {
+    Serial.println("Stop");
+    
+  }
+}
+
  
 void loop() {
-  
+  if (actionMove == "led") {//Ativado
+    tone(buzzer, 2050);
+    if(ledAtivo)
+    {
+          digitalWrite(ledPin, LOW);
+          ledAtivo = false;
+    }
+    else
+    {
+      digitalWrite(ledPin, HIGH);
+      ledAtivo = true;
+    }
+    delay(100);
+  } else {//desativado
+    noTone(buzzer);
+    digitalWrite(ledPin, LOW);
+  }
 }
