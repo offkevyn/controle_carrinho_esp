@@ -207,9 +207,9 @@
         let btn_select = document.getElementById("btn_pressed");
 
         Array.from(list_buttons).forEach(element => {
-            element.addEventListener('mousedown', function (e) {
+            element.addEventListener('touchstart', function (e) {
                 btn_select.appendChild(e.target.cloneNode(true));
-                intervalId = setInterval(btn_pressed, 150);
+                intervalId = setInterval(btn_pressed, 50);
                 action_pressed = e;
             });
 
@@ -222,7 +222,7 @@
                 action_pressed = e;
             });
 
-            element.addEventListener('mouseup', release);
+            element.addEventListener('touchend', release);
         });
 
         function btn_pressed() {

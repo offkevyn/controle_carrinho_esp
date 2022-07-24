@@ -7,8 +7,14 @@
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncWiFiManager.h>
 
-#define ledPin D0
-#define buzzer D1
+#define ledPin1 D6
+#define ledPin2 D7
+#define buzzer D5
+
+#define MOTOR_1_PIN_1 D0
+#define MOTOR_1_PIN_2 D1
+#define MOTOR_2_PIN_1 D2
+#define MOTOR_2_PIN_2 D3
 
 AsyncWebServer server(80);
 DNSServer dns;
@@ -293,8 +299,13 @@ const long timeoutTime = 2000;
 void setup() {
   Serial.begin(9600);
   
-  pinMode(ledPin, OUTPUT);
+  pinMode(ledPin1, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
   pinMode(buzzer, OUTPUT);
+  pinMode(MOTOR_1_PIN_1, OUTPUT);
+  pinMode(MOTOR_1_PIN_2, OUTPUT);
+  pinMode(MOTOR_2_PIN_1, OUTPUT);
+  pinMode(MOTOR_2_PIN_2, OUTPUT);
   
   AsyncWiFiManager wifiManager(&server,&dns);
   //wifiManager.resetSettings();
@@ -324,15 +335,24 @@ static void mover(String variable){
   
   if(variable == "forward") {
     Serial.println("Forward");
-    
+    digitalWrite(MOTOR_1_PIN_1, 0);
+    digitalWrite(MOTOR_1_PIN_2, 1);
+    digitalWrite(MOTOR_2_PIN_1, 1);
+    digitalWrite(MOTOR_2_PIN_2, 0);
   }
   else if(variable == "left") {
     Serial.println("Left");
-    
+    digitalWrite(MOTOR_1_PIN_1, 0);
+    digitalWrite(MOTOR_1_PIN_2, 1);
+    digitalWrite(MOTOR_2_PIN_1, 0);
+    digitalWrite(MOTOR_2_PIN_2, 1);
   }
   else if(variable == "right") {
     Serial.println("Right");
-    
+    digitalWrite(MOTOR_1_PIN_1, 1);
+    digitalWrite(MOTOR_1_PIN_2, 0);
+    digitalWrite(MOTOR_2_PIN_1, 1);
+    digitalWrite(MOTOR_2_PIN_2, 0);
   }
   else if(variable == "led") {
     Serial.println("Led");
@@ -340,11 +360,17 @@ static void mover(String variable){
   }
   else if(variable == "backward") {
     Serial.println("Backward");
-    
+    digitalWrite(MOTOR_1_PIN_1, 1);
+    digitalWrite(MOTOR_1_PIN_2, 0);
+    digitalWrite(MOTOR_2_PIN_1, 0);
+    digitalWrite(MOTOR_2_PIN_2, 1);
   }
   else if(variable == "stop") {
     Serial.println("Stop");
-    
+    digitalWrite(MOTOR_1_PIN_1, 0);
+    digitalWrite(MOTOR_1_PIN_2, 0);
+    digitalWrite(MOTOR_2_PIN_1, 0);
+    digitalWrite(MOTOR_2_PIN_2, 0);
   }
 }
 
@@ -354,17 +380,21 @@ void loop() {
     tone(buzzer, 2050);
     if(ledAtivo)
     {
-          digitalWrite(ledPin, LOW);
+          digitalWrite(ledPin1, LOW);
+          digitalWrite(ledPin2, HIGH);
           ledAtivo = false;
     }
     else
     {
-      digitalWrite(ledPin, HIGH);
+      digitalWrite(ledPin1, HIGH);
+      digitalWrite(ledPin2, LOW);
       ledAtivo = true;
     }
     delay(100);
   } else {//desativado
     noTone(buzzer);
-    digitalWrite(ledPin, LOW);
+    digitalWrite(ledPin1, LOW);
+    digitalWrite(ledPin2, LOW);
   }
+    
 }
